@@ -1,28 +1,38 @@
-export interface AjaxRequest {
+export interface AjaxRequestObject {
   url: string;
   type: string;
+  acceptType?: RequestAcceptType;
   data?: {};
   headers?: {};
-  complete?: Function;
+}
+
+export interface AjaxRequest {
+  (req: AjaxRequestObject): Promise<any>;
+}
+
+export enum RequestAcceptType {
+  any,
+  json,
+  plainText,
+  xml,
+  html,
+  xhtml
 }
 
 /**
  * Makes a vanilla js ajax request and returns a promise.
  * @param req The request parameters.
  */
-export function ajax(req: AjaxRequest): Promise<any> {
-  return new Promise<any> ((success, error) => {
+export const ajax: AjaxRequest = (req: AjaxRequestObject): Promise<any> => {
+  return new Promise<any>((success, error) => {
     const httpRequest = new XMLHttpRequest();
     if (!httpRequest) {
       error('Browser does not support modern ajax calls.');
       return;
     }
-    
+
     httpRequest.onreadystatechange = () => {
       if (httpRequest.readyState === XMLHttpRequest.DONE) {
-        if (undefined !== req.complete && null !== req.complete)
-          req.complete();
-        
         if (httpRequest.status >= 200 && httpRequest.status < 300)
           success(httpRequest.responseText);
         else
@@ -32,10 +42,16 @@ export function ajax(req: AjaxRequest): Promise<any> {
 
     httpRequest.open(req.type, req.url);
 
-    setContentTypeHeader(httpRequest, req.type);
+    let data = req.data;
+    if (!FormData.prototype.isPrototypeOf(req.data)) {
+      data = convertToEncodedForm(req.data);
+      setContentTypeHeader(httpRequest, req.type);
+    }
+
+    setAcceptHeader(httpRequest, req.acceptType);
     setHeaders(httpRequest, req.headers);
 
-    httpRequest.send(convertToEncodedForm(req.data));
+    httpRequest.send(data);
   });
 
   function setContentTypeHeader(httpRequest: XMLHttpRequest, method: string): void {
@@ -45,6 +61,34 @@ export function ajax(req: AjaxRequest): Promise<any> {
       type = 'application/x-www-form-urlencoded';
 
     httpRequest.setRequestHeader('Content-type', type);
+  }
+
+  function setAcceptHeader(httpRequest: XMLHttpRequest, acceptType: RequestAcceptType): void {
+    let acceptHeaderText = '*/*';
+
+    switch (acceptType) {
+      case RequestAcceptType.json:
+        acceptHeaderText = 'application/json';
+        break;
+
+      case RequestAcceptType.plainText:
+        acceptHeaderText = 'text/plain';
+        break;
+
+      case RequestAcceptType.xml:
+        acceptHeaderText = 'application/xml';
+        break;
+
+      case RequestAcceptType.html:
+        acceptHeaderText = 'text/html';
+        break;
+
+      case RequestAcceptType.xhtml:
+        acceptHeaderText = 'application/xhtml+xml';
+        break;
+    }
+
+    httpRequest.setRequestHeader('Accept', acceptHeaderText);
   }
 
   function setHeaders(httpRequest: XMLHttpRequest, headers: {}): void {
@@ -65,4 +109,4 @@ export function ajax(req: AjaxRequest): Promise<any> {
 
     return strArr.join('&');
   }
-}
+};

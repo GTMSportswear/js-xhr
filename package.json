@@ -1,6 +1,6 @@
 {
   "name": "js-xhr",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "XHR (Ajax) Wrapper for XMLHttpRequest. Supports promise-based returns, similar to fetch.",
   "main": "dist/ajax.js",
   "scripts": {
@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/gtmsportswear/js-xhr#readme",
   "devDependencies": {
-    "tslint": "^3.13.0",
-    "typescript": "^1.8.10"
+    "tslint": "^5.1.0",
+    "typescript": "^2.2.2"
   }
 }
