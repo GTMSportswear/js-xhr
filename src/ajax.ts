@@ -57,7 +57,7 @@ export const ajax: AjaxRequest = (req: AjaxRequestObject): Promise<any> => {
   function setContentTypeHeader(httpRequest: XMLHttpRequest, method: string): void {
     let type = 'text/plain';
 
-    if (method.toLowerCase() === 'post')
+    if (method.toLowerCase() === 'post' || method.toLowerCase() === 'put')
       type = 'application/x-www-form-urlencoded';
 
     httpRequest.setRequestHeader('Content-type', type);

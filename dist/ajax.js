@@ -1,4 +1,13 @@
-export function ajax(req) {
+export var RequestAcceptType;
+(function (RequestAcceptType) {
+    RequestAcceptType[RequestAcceptType["any"] = 0] = "any";
+    RequestAcceptType[RequestAcceptType["json"] = 1] = "json";
+    RequestAcceptType[RequestAcceptType["plainText"] = 2] = "plainText";
+    RequestAcceptType[RequestAcceptType["xml"] = 3] = "xml";
+    RequestAcceptType[RequestAcceptType["html"] = 4] = "html";
+    RequestAcceptType[RequestAcceptType["xhtml"] = 5] = "xhtml";
+})(RequestAcceptType || (RequestAcceptType = {}));
+export const ajax = (req) => {
     return new Promise((success, error) => {
         const httpRequest = new XMLHttpRequest();
         if (!httpRequest) {
@@ -7,8 +16,6 @@ export function ajax(req) {
         }
         httpRequest.onreadystatechange = () => {
             if (httpRequest.readyState === XMLHttpRequest.DONE) {
-                if (undefined !== req.complete && null !== req.complete)
-                    req.complete();
                 if (httpRequest.status >= 200 && httpRequest.status < 300)
                     success(httpRequest.responseText);
                 else
@@ -16,15 +23,41 @@ export function ajax(req) {
             }
         };
         httpRequest.open(req.type, req.url);
-        setContentTypeHeader(httpRequest, req.type);
+        let data = req.data;
+        if (!FormData.prototype.isPrototypeOf(req.data)) {
+            data = convertToEncodedForm(req.data);
+            setContentTypeHeader(httpRequest, req.type);
+        }
+        setAcceptHeader(httpRequest, req.acceptType);
         setHeaders(httpRequest, req.headers);
-        httpRequest.send(convertToEncodedForm(req.data));
+        httpRequest.send(data);
     });
     function setContentTypeHeader(httpRequest, method) {
         let type = 'text/plain';
-        if (method.toLowerCase() === 'post')
+        if (method.toLowerCase() === 'post' || method.toLowerCase() === 'put')
             type = 'application/x-www-form-urlencoded';
         httpRequest.setRequestHeader('Content-type', type);
+    }
+    function setAcceptHeader(httpRequest, acceptType) {
+        let acceptHeaderText = '*/*';
+        switch (acceptType) {
+            case RequestAcceptType.json:
+                acceptHeaderText = 'application/json';
+                break;
+            case RequestAcceptType.plainText:
+                acceptHeaderText = 'text/plain';
+                break;
+            case RequestAcceptType.xml:
+                acceptHeaderText = 'application/xml';
+                break;
+            case RequestAcceptType.html:
+                acceptHeaderText = 'text/html';
+                break;
+            case RequestAcceptType.xhtml:
+                acceptHeaderText = 'application/xhtml+xml';
+                break;
+        }
+        httpRequest.setRequestHeader('Accept', acceptHeaderText);
     }
     function setHeaders(httpRequest, headers) {
         if (undefined === req.headers || null === req.headers)
@@ -42,5 +75,5 @@ export function ajax(req) {
         });
         return strArr.join('&');
     }
-}
+};
 //# sourceMappingURL=ajax.js.map
