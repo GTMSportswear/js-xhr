@@ -1,6 +1,6 @@
 {
   "name": "js-xhr",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "XHR (Ajax) Wrapper for XMLHttpRequest. Supports promise-based returns, similar to fetch.",
   "main": "dist/ajax.js",
   "scripts": {
