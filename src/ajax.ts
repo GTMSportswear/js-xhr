@@ -42,7 +42,7 @@ export const ajax: AjaxRequest = (req: AjaxRequestObject): Promise<any> => {
 
     httpRequest.open(req.type, req.url);
 
-    let data = req.data;
+    let data = <string>req.data;
     if (!FormData.prototype.isPrototypeOf(req.data)) {
       data = convertToEncodedForm(req.data);
       setContentTypeHeader(httpRequest, req.type);
